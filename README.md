@@ -1,6 +1,8 @@
 # 🧠 Sensor-Based Occupancy Prediction
-This project investigates how well we can **_detect room occupancy_** from wireless sensor network data, specifically under noisy real-world conditions.<br>
+This project investigates how well we can ***detect room occupancy*** from wireless sensor network data, specifically under noisy real-world conditions.<br>
 The dataset comes from the Intel Berkeley Research Lab, featuring readings of temperature, humidity, light, and voltage from 54 deployed sensors.
+
+> The Datset is available on Kaggle as well as UCI ML Datasets:<a href="https://www.kaggle.com/datasets/divyansh22/intel-berkeley-research-lab-sensor-data">Kaggle Dataset (divyansh22)</a>
 
 ---
 
