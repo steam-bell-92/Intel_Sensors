@@ -66,6 +66,5 @@ Intel_Sensors/
 └── README.md              # This one !!
 ```
 
-## Author
-
-Anuj Kulkarni aka steam-bell-92
+## 👤 Author
+Anuj Kulkarni - aka - steam-bell-92
