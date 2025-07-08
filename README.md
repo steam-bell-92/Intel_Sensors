@@ -1,5 +1,5 @@
 # 🧠 Sensor-Based Occupancy Prediction
-This project investigates how well we can detect room occupancy from wireless sensor network data, specifically under noisy real-world conditions.<br>
+This project investigates how well we can **_detect room occupancy_** from wireless sensor network data, specifically under noisy real-world conditions.<br>
 The dataset comes from the Intel Berkeley Research Lab, featuring readings of temperature, humidity, light, and voltage from 54 deployed sensors.
 
 ---
@@ -20,9 +20,9 @@ Trained on clean, original features to assess how well natural groupings align w
 
 - This project was developed with a deliberate and thoughtful trade-off strategy: to prioritize detecting real occupancy at all costs — even if that means tolerating false alarms.
 - This is especially relevant for applications where a missed detection (False Negative) could have severe consequences, such as:
-      - 🔥 Fire or hazard detection systems
-      - 👴 Elderly care and fall monitoring
-      - 🏢 Unauthorized access or motion sensing in secure areas
+  - 🔥 Fire or hazard detection systems
+  - 👴 Elderly care and fall monitoring
+  - 🏢 Unauthorized access or motion sensing in secure areas
 
 >It's better to be alerted unnecessarily than to ignore a real threat.
 
@@ -56,14 +56,33 @@ This trade-off reflects how machine learning should behave in real deployment, e
 
 ---
 
+## 📊 Results
+
+### 🔁 Random Forest Classifier (Supervised with 10% noise)    
+
+| Metric              | Value     |                                
+|---------------------|-----------|                                
+| Accuracy            | `~0.79`     |                              
+| ROC-AUC             | `~0.78`     |                              
+                                                                   
+### 🔘 K-Means Clustering (Unsupervised)
+
+| Metric              | Value     |
+|---------------------|-----------|
+| Accuracy (Post-labeling) | `~0.36` |
+| ROC-AUC             | `~0.58`     |
+| Silhouette Score    | `~0.85`     |
+
+---
+
 ## 📁 File Structure
 
 ```
 Intel_Sensors/
 │
-├── Intel_Sensors.ipynb    # Jupyter notebook containing entire ML Workflow
+├── Intel_Sensors.ipynb    🔹 Jupyter notebook containing entire ML Workflow
 │
-└── README.md              # This one !!
+└── README.md              🔹 This file !!
 ```
 
 ## 👤 Author
