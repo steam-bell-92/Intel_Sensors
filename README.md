@@ -83,7 +83,7 @@ This trade-off reflects how machine learning should behave in real deployment, e
 Intel_Sensors/
 │
 ├── Intel_Sensors.ipynb    🔹 Jupyter notebook containing entire ML Workflow
-│
+├── intel_sensors.py       🔹 Python File
 └── README.md              🔹 This file !!
 ```
 
