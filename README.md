@@ -84,6 +84,7 @@ Intel_Sensors/
 │
 ├── Intel_Sensors.ipynb    🔹 Jupyter notebook containing entire ML Workflow
 ├── intel_sensors.py       🔹 Python File
+├── LICENSE                🔹 MIT License
 └── README.md              🔹 This file !!
 ```
 
