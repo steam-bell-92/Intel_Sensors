@@ -82,10 +82,18 @@ This trade-off reflects how machine learning should behave in real deployment, e
 ```
 Intel_Sensors/
 │
-├── Intel_Sensors.ipynb    🔹 Jupyter notebook containing entire ML Workflow
-├── intel_sensors.py       🔹 Python File
-├── LICENSE                🔹 MIT License
-└── README.md              🔹 This file !!
+├── web/
+│   ├── pages/
+│   │   └── index.html      🔹 Minimal site entrypoint
+│   ├── styles/
+│   │   └── styles.css      🔹 Presentation layer for the site
+│   └── scripts/
+│       └── script.js       🔹 Front-end interactions & heuristics
+├── notebooks/
+│   ├── Intel_Sensors.ipynb 🔹 Jupyter notebook containing entire ML workflow
+│   └── intel_sensors.py    🔹 Python file with model training pipeline
+├── LICENSE                 🔹 MIT License
+└── README.md               🔹 This file !!
 ```
 
 ## 👤 Author
