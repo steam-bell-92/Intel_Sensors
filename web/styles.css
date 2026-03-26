@@ -23,16 +23,20 @@
 body {
     margin: 0;
     color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background:
         radial-gradient(circle at 10% 10%, rgba(10, 132, 255, 0.16), transparent 35%),
         radial-gradient(circle at 90% 20%, rgba(31, 157, 85, 0.12), transparent 30%),
         linear-gradient(145deg, var(--bg), var(--bg-accent));
     min-height: 100vh;
+    padding: 1.25rem 0;
 }
 
 .app-shell {
     width: min(980px, 94vw);
-    margin: 2rem auto;
+    margin: 0 auto;
     border: 1px solid var(--line);
     border-radius: calc(var(--radius) + 6px);
     background: rgba(255, 255, 255, 0.84);
