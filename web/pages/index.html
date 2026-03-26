@@ -3,205 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intel Sensors Occupancy Insights</title>
+    <title>Presence Detection App</title>
     <link rel="stylesheet" href="../styles/styles.css">
 </head>
 <body>
-    <header class="hero">
-        <div class="hero__content">
-            <p class="hero__label">Sensor-Based Occupancy Prediction</p>
-            <h1 class="hero__title">Intel Berkeley Lab Sensor Intelligence</h1>
-            <p class="hero__subtitle">Understanding room occupancy from noisy wireless sensor networks by balancing safety, recall, and responsible ML decisions.</p>
-            <div class="hero__cta">
-                <a class="btn" href="#models">Explore the models</a>
-                <a class="btn btn--ghost" href="../../README.md" target="_blank" rel="noopener">Project README</a>
+    <div class="app-shell">
+        <header class="app-topbar">
+            <div class="brand">
+                <span class="brand__dot" aria-hidden="true"></span>
+                <h1>Presence Detection</h1>
             </div>
-        </div>
-        <div class="hero__viz" aria-hidden="true">
-            <div class="pulse"></div>
-            <div class="pulse pulse--delay"></div>
-        </div>
-    </header>
+            <p class="app-topbar__meta">Active Model: <span id="active-model-label">Random Forest</span></p>
+        </header>
 
-    <main>
-        <section class="section" id="dataset">
-            <h2 class="section__title">Why These Sensors?</h2>
-            <p class="section__intro">Intel Berkeley Research Lab deployed 54 sensors gathering environmental signals. Their combined patterns hint at human presence even without explicit labels.</p>
-            <div class="grid">
-                <article class="card">
-                    <h3>Signals Captured</h3>
-                    <ul>
-                        <li>Temperature drift tracks human heat signatures.</li>
-                        <li>Humidity spikes mirror collective respiration.</li>
-                        <li>Light variance reveals workspace activity.</li>
-                        <li>Voltage stability exposes sensor health.</li>
-                    </ul>
-                </article>
-                <article class="card">
-                    <h3>Noise Is Expected</h3>
-                    <p>Bit-flip noise and missing packets appear in realistic deployments. Our models embrace that messiness rather than hiding it.</p>
-                </article>
-                <article class="card">
-                    <h3>Occupancy Labels</h3>
-                    <p>Labels are inferred, not provided. The workflow aligns raw sensor combinations with actual room usage through careful feature engineering.</p>
-                </article>
-            </div>
-        </section>
-
-        <section class="section" id="philosophy">
-            <h2 class="section__title">Safety-First Tradeoff</h2>
-            <div class="philosophy">
-                <div class="philosophy__statement">
-                    <p>Missing a real occupancy event is far costlier than false alarms. The pipeline prioritizes recall to support high-stakes environments.</p>
-                </div>
-                <div class="philosophy__highlights">
-                    <div class="highlight">
-                        <span class="highlight__icon" aria-hidden="true">🔥</span>
-                        <p>Hazard response systems demand aggressive detection thresholds.</p>
-                    </div>
-                    <div class="highlight">
-                        <span class="highlight__icon" aria-hidden="true">👴</span>
-                        <p>Elder care monitoring calls for minimal false negatives.</p>
-                    </div>
-                    <div class="highlight">
-                        <span class="highlight__icon" aria-hidden="true">🏢</span>
-                        <p>Secure zones benefit from proactive alerts over silent failures.</p>
+        <main class="app-main">
+            <section class="panel panel--form" aria-labelledby="detect-title">
+                <div class="panel__head">
+                    <h2 id="detect-title">Live Detection</h2>
+                    <div class="control-row">
+                        <label for="model-select">Model</label>
+                        <select id="model-select" name="model">
+                            <option value="rf" selected>Random Forest</option>
+                            <option value="kmeans">K-Means</option>
+                        </select>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <section class="section" id="models">
-            <h2 class="section__title">Model Signals</h2>
-            <p class="section__intro">Toggle between supervised resilience and unsupervised structure to see how each approach handles noisy occupancy detection.</p>
-            <div class="toggle" role="tablist" aria-label="Model selector">
-                <button class="toggle__btn is-active" role="tab" aria-selected="true" data-target="rf">Random Forest</button>
-                <button class="toggle__btn" role="tab" aria-selected="false" data-target="kmeans">K-Means</button>
-            </div>
-            <article class="model" id="rf" role="tabpanel" aria-labelledby="Random Forest">
-                <header class="model__header">
-                    <div class="model__title">
-                        <h3>Random Forest Classifier</h3>
-                        <span class="badge" aria-label="Recommended model">Recommended</span>
-                    </div>
-                    <p>Trained with 10% bit-flip noise to mimic sensor glitches, yet retains strong ROC-AUC performance.</p>
-                </header>
-                <div class="metrics">
-                    <div class="metric">
-                        <span class="metric__label">Accuracy</span>
-                        <span class="metric__value">0.79</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric__label">ROC-AUC</span>
-                        <span class="metric__value">0.78</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric__label">Focus</span>
-                        <span class="metric__value">Robust generalization with noise</span>
-                    </div>
-                </div>
-                <p class="model__note">Noise-injected training forces the ensemble to recognize occupancy under imperfect readings.</p>
-            </article>
-            <article class="model is-hidden" id="kmeans" role="tabpanel" aria-labelledby="K-Means">
-                <header class="model__header">
-                    <h3>K-Means Clustering</h3>
-                    <p>Leverages clean signals to uncover natural structure, then maps clusters back to occupancy labels.</p>
-                </header>
-                <div class="metrics">
-                    <div class="metric">
-                        <span class="metric__label">Accuracy</span>
-                        <span class="metric__value">0.36</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric__label">ROC-AUC</span>
-                        <span class="metric__value">0.58</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric__label">Focus</span>
-                        <span class="metric__value">Interpretable occupancy structure</span>
-                    </div>
-                </div>
-                <p class="model__note">High recall remains the priority; the system tolerates false alarms to avoid misses.</p>
-            </article>
-        </section>
-
-        <section class="section" id="deployment">
-            <h2 class="section__title">Why Random Forest Leads</h2>
-            <div class="deployment">
-                <article class="card">
-                    <h3>Field-Ready Decisions</h3>
-                    <p>Ensemble voting softens sensor spikes and dropouts, delivering ~0.79 accuracy without sacrificing the safety-first recall philosophy outlined in the workflow.</p>
-                </article>
-                <article class="card">
-                    <h3>Noise-Tolerant Training</h3>
-                    <p>The 10% bit-flip augmentation mirrors the notebook experiment, helping the model remain confident when live feeds become messy.</p>
-                </article>
-                <article class="card">
-                    <h3>Practical Outputs</h3>
-                    <p>Thresholding the probability stream at 0.5 provides actionable occupancy flags that downstream systems can trust under critical conditions.</p>
-                </article>
-            </div>
-            <aside class="deployment__cta">
-                <p class="deployment__status">Best-proven configuration sourced from the authored notebook and python script.</p>
-                <a class="btn" href="../../notebooks/intel_sensors.py" target="_blank" rel="noopener">Inspect training pipeline</a>
-            </aside>
-        </section>
-
-        <section class="section" id="predictor">
-            <h2 class="section__title">Try The Model</h2>
-            <p class="section__intro">Feed in live sensor snapshots to approximate the Random Forest ensemble’s recall-first decision. The heuristic below mirrors the trained pipeline’s thresholds while staying deployable in the browser.</p>
-            <div class="predictor">
                 <form id="prediction-form" class="predictor__form" autocomplete="off">
-                    <div class="form-field">
-                        <label for="temperature">Temperature (°C)</label>
-                        <input type="number" id="temperature" name="temperature" inputmode="decimal" step="0.1" placeholder="18.5" required>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="temperature">Temperature (C)</label>
+                            <input type="number" id="temperature" name="temperature" inputmode="decimal" step="0.1" min="-20" max="80" placeholder="18.5" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="humidity">Humidity (%)</label>
+                            <input type="number" id="humidity" name="humidity" inputmode="decimal" step="0.1" min="0" max="100" placeholder="42" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="light">Light (Lux)</label>
+                            <input type="number" id="light" name="light" inputmode="decimal" step="1" min="0" max="2000" placeholder="300" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="voltage">Voltage (V)</label>
+                            <input type="number" id="voltage" name="voltage" inputmode="decimal" step="0.01" min="0" max="5" placeholder="2.75" required>
+                        </div>
                     </div>
-                    <div class="form-field">
-                        <label for="humidity">Humidity (%)</label>
-                        <input type="number" id="humidity" name="humidity" inputmode="decimal" step="0.1" placeholder="42" required>
+
+                    <div class="actions">
+                        <button type="submit" class="btn">Run Detection</button>
+                        <button type="reset" class="btn btn--ghost" id="reset-btn">Reset</button>
                     </div>
-                    <div class="form-field">
-                        <label for="light">Light (Lux)</label>
-                        <input type="number" id="light" name="light" inputmode="decimal" step="1" placeholder="300" required>
-                    </div>
-                    <div class="form-field">
-                        <label for="voltage">Sensor Voltage (V)</label>
-                        <input type="number" id="voltage" name="voltage" inputmode="decimal" step="0.01" placeholder="2.75" required>
-                    </div>
-                    <button type="submit" class="btn">Estimate Occupancy</button>
-                    <p class="predictor__note">Threshold tuned for high recall: a 0.60 probability already prompts an occupancy alert.</p>
                 </form>
+            </section>
+
+            <section class="panel panel--status" aria-label="Detection result">
                 <div class="predictor__result" role="status" aria-live="polite">
                     <p class="predictor__headline">Awaiting sensor input.</p>
-                    <p class="predictor__detail">Provide readings to see occupancy probability and recommended action.</p>
+                    <p class="predictor__detail">Enter current readings and run detection.</p>
                     <p class="predictor__confidence"></p>
                 </div>
-            </div>
-        </section>
 
-        <section class="section" id="insight">
-            <h2 class="section__title">Key Insights</h2>
-            <div class="grid">
-                <article class="card">
-                    <h3>Recall Over Accuracy</h3>
-                    <p>Overall accuracy drops to ~0.36 in unsupervised labeling, but mission-critical recall stays high, aligning with safety goals.</p>
-                </article>
-                <article class="card">
-                    <h3>Meaningful ROC-AUC Lift</h3>
-                    <p>Both tracks beat random chance, showing the models learned useful boundaries even under noisy, imbalanced classes.</p>
-                </article>
-                <article class="card">
-                    <h3>Responsible Deployment</h3>
-                    <p>Design choices reflect realistic deployments where ethical and operational stakes trump leaderboard metrics.</p>
-                </article>
-            </div>
-        </section>
-    </main>
+                <div class="quick-values" aria-label="Quick test values">
+                    <button class="quick-values__btn" data-temp="20.8" data-humidity="46" data-light="520" data-voltage="2.76">Likely Presence</button>
+                    <button class="quick-values__btn" data-temp="16.3" data-humidity="31" data-light="90" data-voltage="2.71">Likely Empty</button>
+                </div>
+            </section>
+        </main>
 
-    <footer class="footer">
-        <p>Built by Anuj Kulkarni · MIT License · <a href="https://www.kaggle.com/datasets/divyansh22/intel-berkeley-research-lab-sensor-data" target="_blank" rel="noopener">Dataset on Kaggle</a></p>
-    </footer>
-
+        <footer class="app-footer">
+            <p>Dual-model detection mode enabled</p>
+        </footer>
+    </div>
     <script src="../scripts/script.js"></script>
 </body>
 </html>

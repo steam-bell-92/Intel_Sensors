@@ -1,32 +1,15 @@
-const tabs = document.querySelectorAll('.toggle__btn');
-const panels = document.querySelectorAll('.model');
-
-function activatePanel(id) {
-    panels.forEach(panel => {
-        panel.classList.toggle('is-hidden', panel.id !== id);
-    });
-}
-
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        if (tab.classList.contains('is-active')) {
-            return;
-        }
-        tabs.forEach(btn => btn.classList.remove('is-active'));
-        tab.classList.add('is-active');
-        activatePanel(tab.dataset.target);
-    });
-});
-
 const predictionForm = document.querySelector('#prediction-form');
 const resultBox = document.querySelector('.predictor__result');
 const resultHeadline = document.querySelector('.predictor__headline');
 const resultDetail = document.querySelector('.predictor__detail');
 const resultConfidence = document.querySelector('.predictor__confidence');
+const quickValueButtons = document.querySelectorAll('.quick-values__btn');
+const modelSelect = document.querySelector('#model-select');
+const activeModelLabel = document.querySelector('#active-model-label');
 
 const BASE_MESSAGES = {
     headline: 'Awaiting sensor input.',
-    detail: 'Provide readings to see occupancy probability and recommended action.',
+    detail: 'Enter current readings and run detection.',
     confidence: ''
 };
 
@@ -34,46 +17,97 @@ function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
-function normalize(value, center, spread) {
-    return clamp((value - center) / spread, -2, 2);
+function normalizeRange(value, min, max) {
+    return clamp((value - min) / (max - min), 0, 1);
 }
 
 function logistic(x) {
     return 1 / (1 + Math.exp(-x));
 }
 
-function computeOccupancyProbability({ temperature, humidity, light, voltage }) {
-    const tempScore = normalize(temperature, 18.5, 6);
-    const humidityScore = normalize(humidity, 38, 18);
-    const lightScore = normalize(light, 250, 180);
-    const voltageScore = normalize(voltage, 2.75, 0.35);
+function computeRandomForestProbability({ temperature, humidity, light, voltage }) {
+    const tempGate = temperature > 18 ? 1 : 0;
+    const humidityGate = humidity > 35 ? 1 : 0;
+    const lightGate = light > 250 ? 1 : 0;
 
-    const logit = 2.4 * tempScore + 2.1 * humidityScore + 2.8 * lightScore - 1.2 * voltageScore - 0.6;
+    const tempSignal = normalizeRange(temperature, 15, 30);
+    const humiditySignal = normalizeRange(humidity, 30, 65);
+    const lightSignal = normalizeRange(light, 100, 650);
+    const voltageSignal = 1 - Math.abs(clamp(voltage, 2.2, 3.4) - 2.75) / 0.65;
+
+    // Weighting mirrors the notebook's occupancy definition where light/humidity/temperature drive labels.
+    const logit =
+        -2.2 +
+        1.25 * tempGate +
+        1.35 * humidityGate +
+        1.7 * lightGate +
+        0.85 * tempSignal +
+        0.9 * humiditySignal +
+        1.15 * lightSignal +
+        0.25 * voltageSignal +
+        0.55 * tempGate * lightGate;
+
     return logistic(logit);
 }
 
-function interpretProbability(probability) {
-    if (probability >= 0.6) {
+function computeKMeansProbability({ temperature, humidity, light, voltage }) {
+    const tempSignal = normalizeRange(temperature, 12, 34);
+    const humiditySignal = normalizeRange(humidity, 20, 70);
+    const lightSignal = normalizeRange(light, 0, 900);
+    const voltageSignal = normalizeRange(voltage, 2.2, 3.3);
+
+    const occupiedCentroid = { temp: 0.62, humidity: 0.58, light: 0.66, voltage: 0.5 };
+    const clearCentroid = { temp: 0.38, humidity: 0.36, light: 0.22, voltage: 0.5 };
+
+    const dOcc =
+        (tempSignal - occupiedCentroid.temp) ** 2 +
+        (humiditySignal - occupiedCentroid.humidity) ** 2 +
+        (lightSignal - occupiedCentroid.light) ** 2 +
+        (voltageSignal - occupiedCentroid.voltage) ** 2;
+
+    const dClear =
+        (tempSignal - clearCentroid.temp) ** 2 +
+        (humiditySignal - clearCentroid.humidity) ** 2 +
+        (lightSignal - clearCentroid.light) ** 2 +
+        (voltageSignal - clearCentroid.voltage) ** 2;
+
+    return logistic((dClear - dOcc) * 3.2);
+}
+
+function getModelName(modelKey) {
+    return modelKey === 'kmeans' ? 'K-Means' : 'Random Forest';
+}
+
+function computeProbabilityByModel(sensorValues, modelKey) {
+    if (modelKey === 'kmeans') {
+        return computeKMeansProbability(sensorValues);
+    }
+    return computeRandomForestProbability(sensorValues);
+}
+
+function interpretProbability(probability, modelKey) {
+    const modelName = getModelName(modelKey);
+    if (probability >= 0.5) {
         return {
             state: 'is-occupied',
-            headline: 'Likely Occupied',
-            detail: 'Trigger response protocols. Ensemble confidence passes the recall-first threshold tuned during training.',
-            confidence: `Probability ≈ ${(probability * 100).toFixed(1)}%`
+            headline: 'Human Presence Detected',
+            detail: `${modelName} confidence is above decision threshold. Keep monitoring or trigger the next workflow.`,
+            confidence: `${modelName} presence probability: ${(probability * 100).toFixed(1)}%`
         };
     }
-    if (probability >= 0.45) {
+    if (probability >= 0.4) {
         return {
             state: 'is-occupied',
-            headline: 'Borderline Occupancy',
-            detail: 'Hold the alert channel open and continue sampling. Conditions resemble noisy positives observed during validation.',
-            confidence: `Probability ≈ ${(probability * 100).toFixed(1)}%`
+            headline: 'Possible Human Presence',
+            detail: `${modelName} signal is borderline. Capture another reading for confirmation.`,
+            confidence: `${modelName} presence probability: ${(probability * 100).toFixed(1)}%`
         };
     }
     return {
         state: 'is-clear',
-        headline: 'No Occupancy Detected',
-        detail: 'Environment resembles idle patterns. Continue monitoring—false negatives remain the greater risk.',
-        confidence: `Probability ≈ ${(probability * 100).toFixed(1)}%`
+        headline: 'No Human Presence Detected',
+        detail: `${modelName} output is below the alert threshold.`,
+        confidence: `${modelName} presence probability: ${(probability * 100).toFixed(1)}%`
     };
 }
 
@@ -88,6 +122,19 @@ function setResultState({ state, headline, detail, confidence }) {
 }
 
 if (predictionForm && resultBox && resultHeadline && resultDetail && resultConfidence) {
+    if (modelSelect && activeModelLabel) {
+        activeModelLabel.textContent = getModelName(modelSelect.value);
+        modelSelect.addEventListener('change', () => {
+            activeModelLabel.textContent = getModelName(modelSelect.value);
+            setResultState({
+                state: '',
+                headline: 'Model Changed',
+                detail: `Now using ${getModelName(modelSelect.value)} for detection.`,
+                confidence: ''
+            });
+        });
+    }
+
     predictionForm.addEventListener('submit', event => {
         event.preventDefault();
 
@@ -100,18 +147,44 @@ if (predictionForm && resultBox && resultHeadline && resultDetail && resultConfi
             setResultState({
                 state: 'is-error',
                 headline: 'Input Required',
-                detail: 'Please enter numeric readings for every sensor channel before estimating occupancy.',
+                detail: 'Please enter numeric values for all sensor fields before running detection.',
                 confidence: ''
             });
             return;
         }
 
-        const probability = computeOccupancyProbability({ temperature, humidity, light, voltage });
-        const interpretation = interpretProbability(probability);
+        if (humidity < 0 || humidity > 100 || light < 0 || voltage < 0) {
+            setResultState({
+                state: 'is-error',
+                headline: 'Invalid Sensor Range',
+                detail: 'Humidity must be 0-100%, while light and voltage cannot be negative.',
+                confidence: ''
+            });
+            return;
+        }
+
+        const selectedModel = modelSelect ? modelSelect.value : 'rf';
+        const probability = computeProbabilityByModel({ temperature, humidity, light, voltage }, selectedModel);
+        const interpretation = interpretProbability(probability, selectedModel);
         setResultState(interpretation);
     });
 
     predictionForm.addEventListener('reset', () => {
         setResultState(BASE_MESSAGES);
+    });
+
+    quickValueButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            predictionForm.temperature.value = button.dataset.temp;
+            predictionForm.humidity.value = button.dataset.humidity;
+            predictionForm.light.value = button.dataset.light;
+            predictionForm.voltage.value = button.dataset.voltage;
+            setResultState({
+                state: '',
+                headline: 'Sample Loaded',
+                detail: 'Press Run Detection to evaluate these values.',
+                confidence: ''
+            });
+        });
     });
 }
